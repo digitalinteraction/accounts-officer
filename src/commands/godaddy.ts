@@ -43,11 +43,9 @@ export async function updateGoDaddyRecords() {
   }))
 
   // Poll each domain in parallel
-  await Promise.all(
-    newDomainRecords.map(async (d) => {
-      d.HttpResponse = await pollDomain(d.Name)
-    })
-  )
+  for (const record of newDomainRecords) {
+    record.HttpResponse = await pollDomain(record.Name)
+  }
 
   // Update domain records
   const table = airtable.base(appConfig.base).table(appConfig.tables.godaddy)
