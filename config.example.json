@@ -1,0 +1,8 @@
+{
+  "base": "your_airable_base_id",
+  "tables": {
+    "aws": "AWS",
+    "do": "DigitalOcean",
+    "godaddy": "GoDaddy"
+  }
+}

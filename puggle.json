@@ -1,0 +1,21 @@
+{
+  "version": "0.5.5",
+  "projectName": "accounts-officer",
+  "preset": {
+    "name": "robb-j:ts-node",
+    "version": "0.2.2"
+  },
+  "plugins": {
+    "npm": "0.1.0"
+  },
+  "params": {
+    "npm": {
+      "packageName": "@openlab/accounts-officer",
+      "packageInfo": "",
+      "repository": "digitalinteraction/accounts-officer"
+    },
+    "cli": {
+      "enabled": true
+    }
+  }
+}
