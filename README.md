@@ -189,6 +189,7 @@ to build a container that is pushed to
 - Add more services/resources
 - Pull in people too
 - Allow aws regions to be customised
+- Explore a "billing" sheet which pulls the monthly bill from each service
 
 ---
 
