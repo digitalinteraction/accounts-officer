@@ -41,6 +41,14 @@ export async function updateDigitalOceanRecords() {
     droplets.map((d) => d.name)
   )
 
+  const backupIds = new Set(
+    droplets
+      .map((d) => d.backup_ids)
+      .flat()
+      .map((id) => id.toString())
+  )
+  debug('Backup ids %o', backupIds)
+
   //
   // Kubernetes Clusters
   //
@@ -93,7 +101,8 @@ export async function updateDigitalOceanRecords() {
   // Snapshots
   //
   const snapshots = await getSnapshots()
-  const newSnapshotRecords = snapshots.map((s) => ({
+  const nonBackupsSnapshots = snapshots.filter((s) => !backupIds.has(s.id))
+  const newSnapshotRecords = nonBackupsSnapshots.map((s) => ({
     Name: s.name,
     Type: 'snapshot',
     Cost: s.size_gigabytes * DO_SNAPSHOT_COST_PER_GB,

@@ -18,6 +18,7 @@ export interface DoDroplet {
   image: {
     name: string
   }
+  backup_ids: number[]
 }
 
 /** A partial-typing of a DO droplet size */
@@ -51,6 +52,7 @@ export interface DoVolume {
 
 /** A partial-typing of a DO snapshot */
 export interface DoSnapshot {
+  id: string
   name: string
   size_gigabytes: number
 }
