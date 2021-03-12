@@ -13,6 +13,7 @@
     "lint": "tsc --noEmit",
     "prettier": "prettier --write '**/*.{js,json,css,md,ts,tsx}'",
     "preversion": "npm run test -s && npm run build",
+    "postversion": "--follow-tags",
     "start": "ts-node -r dotenv/config src/cli.ts",
     "debug": "node --inspect-brk -r ts-node/register -r dotenv/config src/cli.ts",
     "readme-toc": "md-toc -i"
