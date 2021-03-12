@@ -6,10 +6,11 @@
 
 import yargs = require('yargs')
 
-import { updateDigitalOceanRecords, doData } from './commands/do'
-import { updateGoDaddyRecords, godaddyData } from './commands/godaddy'
-import { updateAwsRecords, awsData } from './commands/aws'
+import { updateDigitalOceanRecords } from './commands/do'
+import { updateGoDaddyRecords } from './commands/godaddy'
+import { updateAwsRecords } from './commands/aws'
 import { MergeResult } from './services/airtable'
+import { dataTypes, runDataCommand } from './commands/data'
 
 /** wrap a top-level function to handle it's errors by outputting them and exiting the process */
 function handleErrors<T extends any[], U>(
@@ -89,15 +90,6 @@ yargs.command(
   handleErrors(() => runUpdate('Updating GoDaddy', updateGoDaddyRecords))
 )
 
-//
-// Data
-//
-const dataTypes: Record<string, Record<string, Function>> = {
-  do: doData,
-  godaddy: godaddyData,
-  aws: awsData,
-}
-
 yargs.command(
   'data <service> [resource]',
   'Fetch data from a service',
@@ -113,27 +105,7 @@ yargs.command(
         demandOption: true,
       }),
   handleErrors(async (args) => {
-    const service = dataTypes[args.service]
-    if (!service) throw new Error(`Unknown service '${args.service}'`)
-
-    const allowedResources = Object.keys(service)
-      .map((k) => `"${k}"`)
-      .join(', ')
-
-    if (!args.resource) {
-      console.log(`Available ${args.service} resources: ${allowedResources}`)
-      return
-    }
-
-    const resource = service[args.resource]
-    if (!resource) {
-      throw new Error(
-        `Unknown resource '${args.service}.${args.resource}', options: ${allowedResources}`
-      )
-    }
-
-    const result = await resource()
-    console.log(JSON.stringify(result, null, 2))
+    await runDataCommand(args.service, args.resource)
   })
 )
 

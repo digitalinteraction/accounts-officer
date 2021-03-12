@@ -26,7 +26,7 @@ There are commands to run everything, each services or to show individual bits o
 
 Accounts Officer currently supports pulling data from:
 
-- DigitalOcean → Droplets, Volumes, Clusters, Volumes & Snapshots
+- DigitalOcean → Droplets, Volumes, Clusters, Volumes, Snapshots & Load Balancers
 - AWS → Buckets & Domains and single-region RDS & Lightsails
 - GoDaddy → domains
 
@@ -69,12 +69,12 @@ Heres what each table should look like:
 
 **DigitalOcean**
 
-| Field  | Type                                                         |
-| ------ | ------------------------------------------------------------ |
-| Name   | Single line text                                             |
-| Type   | Single Select - droplet, cluster, database, volume, snapshot |
-| Status | Single Select - active, unlinked                             |
-| Cost   | Currency                                                     |
+| Field  | Type                                                                       |
+| ------ | -------------------------------------------------------------------------- |
+| Name   | Single line text                                                           |
+| Type   | Single Select - droplet, cluster, database, volume, snapshot, loadbalancer |
+| Status | Single Select - active, unlinked                                           |
+| Cost   | Currency                                                                   |
 
 **AWS**
 

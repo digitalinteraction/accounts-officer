@@ -12,11 +12,19 @@ import {
   getDatabases,
   getVolumes,
   getSnapshots,
+  getLoadBalancers,
 } from '../services/do'
 import { appConfig } from '../services/config'
 
 const DO_VOLUME_COST_PER_GB = 0.1
 const DO_SNAPSHOT_COST_PER_GB = 0.05
+const DO_LOAD_BALANCER_COSTS = new Map(
+  Object.entries({
+    'lb-small': 10,
+    'lb-medium': 30,
+    'lb-large': 60,
+  })
+)
 
 const debug = createDebug('cli:cmd:do')
 
@@ -109,6 +117,16 @@ export async function updateDigitalOceanRecords() {
   }))
   debug('Found %o snapshots', snapshots.length)
 
+  //
+  // Loadbalancers
+  //
+  const loadbalancers = await getLoadBalancers()
+  const newLoadbalancers = loadbalancers.map((l) => ({
+    Name: l.name,
+    Type: 'loadbalancer',
+    Cost: DO_LOAD_BALANCER_COSTS.get(l.size) ?? undefined,
+  }))
+
   // Get the DO table
   const table = airtable.base(appConfig.base).table(appConfig.tables.do)
 
@@ -120,7 +138,8 @@ export async function updateDigitalOceanRecords() {
     await mergeAirtableRecords(table, 'cluster', newClusterRecords),
     await mergeAirtableRecords(table, 'database', newDatabaseRecords),
     await mergeAirtableRecords(table, 'volume', newVolumeRecords),
-    await mergeAirtableRecords(table, 'snapshot', newSnapshotRecords)
+    await mergeAirtableRecords(table, 'snapshot', newSnapshotRecords),
+    await mergeAirtableRecords(table, 'loadbalancer', newLoadbalancers)
   )
 }
 
@@ -132,4 +151,5 @@ export const doData = {
   volumes: getVolumes,
   sizes: () => getSizeCosts().then((s) => Object.fromEntries(s.entries())),
   snapshots: getSnapshots,
+  loadbalancers: getLoadBalancers,
 }
