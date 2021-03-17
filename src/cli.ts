@@ -11,6 +11,7 @@ import { updateGoDaddyRecords } from './commands/godaddy'
 import { updateAwsRecords } from './commands/aws'
 import { MergeResult } from './services/airtable'
 import { dataTypes, runDataCommand } from './commands/data'
+import { updateSendgridRecords } from './commands/sendgrid'
 
 /** wrap a top-level function to handle it's errors by outputting them and exiting the process */
 function handleErrors<T extends any[], U>(
@@ -57,6 +58,7 @@ yargs.command(
     await runUpdate('Updating AWS', updateAwsRecords)
     await runUpdate('Updating DO', updateDigitalOceanRecords)
     await runUpdate('Updating GoDaddy', updateGoDaddyRecords)
+    await runUpdate('Updating SendGrid', updateSendgridRecords)
   })
 )
 
@@ -88,6 +90,16 @@ yargs.command(
   'Run through GoDaddy, fetch resources and update Airtable',
   (yargs) => yargs,
   handleErrors(() => runUpdate('Updating GoDaddy', updateGoDaddyRecords))
+)
+
+//
+// SendGrid
+//
+yargs.command(
+  'sendgrid',
+  'Run through SendGrid, fetch resources and update Airtable',
+  (yargs) => yargs,
+  handleErrors(() => runUpdate('Updating SendGrid', updateSendgridRecords))
 )
 
 yargs.command(

@@ -13,7 +13,8 @@ export function loadEnv(base = process.env) {
       'AIRTABLE_API_KEY',
       'DO_API_KEY',
       'GODADDY_API_KEY',
-      'GODADDY_API_SECRET'
+      'GODADDY_API_SECRET',
+      'SENDGRID_API_KEY'
     ),
     NODE_ENV,
   })

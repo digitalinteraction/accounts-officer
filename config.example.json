@@ -3,6 +3,7 @@
   "tables": {
     "aws": "AWS",
     "do": "DigitalOcean",
-    "godaddy": "GoDaddy"
+    "godaddy": "GoDaddy",
+    "sendgrid": "SendGrid"
   }
 }

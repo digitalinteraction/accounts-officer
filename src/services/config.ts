@@ -1,5 +1,4 @@
 import fs = require('fs')
-import { join } from 'path'
 import { object, string, Infer, assert } from 'superstruct'
 
 /** A structure to validate and type a config for the app */
@@ -10,6 +9,7 @@ const AppConfigStruct = object({
     aws: string(),
     do: string(),
     godaddy: string(),
+    sendgrid: string(),
   }),
 })
 

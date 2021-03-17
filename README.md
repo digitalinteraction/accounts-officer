@@ -29,6 +29,7 @@ Accounts Officer currently supports pulling data from:
 - DigitalOcean → Droplets, Volumes, Clusters, Volumes, Snapshots & Load Balancers
 - AWS → Buckets & Domains and single-region RDS & Lightsails
 - GoDaddy → domains
+- SendGrid → API keys
 
 Accounts Officer pulls in data from those services and merges records
 with those already in Airtable.
@@ -94,6 +95,14 @@ Heres what each table should look like:
 | Status       | Single Select - active, unlinked |
 | Expires      | Date                             |
 | HttpResponse | Single line text                 |
+
+**SendGrid**
+
+| Field  | Type                             |
+| ------ | -------------------------------- |
+| Name   | Single line text                 |
+| Type   | Single Select - apikey           |
+| Status | Single Select - active, unlinked |
 
 ## Development
 
@@ -190,6 +199,7 @@ to build a container that is pushed to
 - Pull in people too
 - Allow aws regions to be customised
 - Explore a "billing" sheet which pulls the monthly bill from each service
+- Opt-in to services rather than requiring all
 
 ---
 

@@ -1,6 +1,7 @@
 import { awsData } from './aws'
 import { doData } from './do'
 import { godaddyData } from './godaddy'
+import { sendgridData } from './sendgrid'
 
 //
 // Data
@@ -9,6 +10,7 @@ export const dataTypes: Record<string, Record<string, Function>> = {
   do: doData,
   godaddy: godaddyData,
   aws: awsData,
+  sendgrid: sendgridData,
 }
 
 export async function runDataCommand(
