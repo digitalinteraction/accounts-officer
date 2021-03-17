@@ -10,6 +10,7 @@ const AppConfigStruct = object({
     do: string(),
     godaddy: string(),
     sendgrid: string(),
+    vercel: string(),
   }),
 })
 

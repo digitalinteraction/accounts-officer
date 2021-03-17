@@ -14,7 +14,9 @@ export function loadEnv(base = process.env) {
       'DO_API_KEY',
       'GODADDY_API_KEY',
       'GODADDY_API_SECRET',
-      'SENDGRID_API_KEY'
+      'SENDGRID_API_KEY',
+      'VERCEL_TOKEN',
+      'VERCEL_TEAM_ID'
     ),
     NODE_ENV,
   })
