@@ -5,7 +5,7 @@
 
 import createDebug from 'debug'
 import got, { PaginationOptions } from 'got'
-import { env } from '../services/env'
+import { env } from '../lib/env.js'
 
 const debug = createDebug('cli:service:do')
 
@@ -97,32 +97,29 @@ function paginator<T, K extends string>(
   key: K
 ): PaginationOptions<T, DoLinks & Record<K, T[]>> {
   return {
-    pagination: {
-      // A method to transform a http response into an array of items
-      transform(response) {
-        debug('page=%o', response.requestUrl)
-        return response.body[key]
-      },
+    // A method to transform a http response into an array of items
+    transform(response) {
+      debug('page=%o', response.requestUrl.toString())
+      return response.body[key]
+    },
 
-      // A method to take a response and return new search params for the next response
-      // or return false if pagination is complete
-      paginate(response) {
-        try {
-          const { links } = response.body
-          const next = links?.pages?.next ? new URL(links.pages.next) : null
+    // A method to take a response and return new search params for the next response
+    // or return false if pagination is complete
+    paginate(data) {
+      try {
+        const { links } = data.response.body
+        const next = links?.pages?.next ? new URL(links.pages.next) : null
 
-          if (!next) return false
+        if (!next) return false
 
-          return {
-            searchParams: {
-              ...response.request.options.searchParams,
-              page: next.searchParams.get('page'),
-            },
-          }
-        } catch (error) {
-          return false
+        return {
+          searchParams: {
+            page: next.searchParams.get('page'),
+          },
         }
-      },
+      } catch (error) {
+        return false
+      }
     },
   }
 }
@@ -130,7 +127,7 @@ function paginator<T, K extends string>(
 /** Get DO droplet sizes and put into a Map */
 export async function getSizeCosts() {
   const sizes = await digitalOcean.paginate.all('sizes', {
-    ...paginator<DoSize, 'sizes'>('sizes'),
+    pagination: paginator<DoSize, 'sizes'>('sizes'),
   })
 
   const map = new Map<string, number>()
@@ -145,7 +142,7 @@ export async function getSizeCosts() {
 /** Get DO droplets and filter out Kubernetes nodes */
 export async function getDroplets() {
   const droplets = await digitalOcean.paginate.all('droplets', {
-    ...paginator<DoDroplet, 'droplets'>('droplets'),
+    pagination: paginator<DoDroplet, 'droplets'>('droplets'),
   })
 
   return droplets.filter((droplet) => !droplet.image.name.startsWith('do-kube'))
@@ -153,40 +150,37 @@ export async function getDroplets() {
 
 /** Get DO Kubernetes clusters */
 export async function getClusters() {
-  return digitalOcean.paginate.all(
-    'kubernetes/clusters',
-    paginator<DoCluster, 'kubernetes_clusters'>('kubernetes_clusters')
-  )
+  return digitalOcean.paginate.all('kubernetes/clusters', {
+    pagination: paginator<DoCluster, 'kubernetes_clusters'>(
+      'kubernetes_clusters'
+    ),
+  })
 }
 
 /** Get DO databases */
 export async function getDatabases() {
-  return digitalOcean.paginate.all(
-    'databases',
-    paginator<DoDatabase, 'databases'>('databases')
-  )
+  return digitalOcean.paginate.all('databases', {
+    pagination: paginator<DoDatabase, 'databases'>('databases'),
+  })
 }
 
 /** Get DO volumes */
 export async function getVolumes() {
-  return digitalOcean.paginate.all(
-    'volumes',
-    paginator<DoVolume, 'volumes'>('volumes')
-  )
+  return digitalOcean.paginate.all('volumes', {
+    pagination: paginator<DoVolume, 'volumes'>('volumes'),
+  })
 }
 
 /** Get DO snapshots */
 export async function getSnapshots() {
-  return digitalOcean.paginate.all(
-    'snapshots',
-    paginator<DoSnapshot, 'snapshots'>('snapshots')
-  )
+  return digitalOcean.paginate.all('snapshots', {
+    pagination: paginator<DoSnapshot, 'snapshots'>('snapshots'),
+  })
 }
 
 /** Get DO load balancers */
 export async function getLoadBalancers() {
-  return digitalOcean.paginate.all(
-    'load_balancers',
-    paginator<DoLoadBalancer, 'load_balancers'>('load_balancers')
-  )
+  return digitalOcean.paginate.all('load_balancers', {
+    pagination: paginator<DoLoadBalancer, 'load_balancers'>('load_balancers'),
+  })
 }

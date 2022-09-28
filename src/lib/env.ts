@@ -1,4 +1,4 @@
-import { checkEnvObject, pluck } from 'valid-env/dist/validator'
+import { checkEnvObject, pluck } from 'valid-env'
 
 /** The app environment */
 export type EnvRecord = ReturnType<typeof loadEnv>
@@ -14,9 +14,7 @@ export function loadEnv(base = process.env) {
       'DO_API_KEY',
       'GODADDY_API_KEY',
       'GODADDY_API_SECRET',
-      'SENDGRID_API_KEY',
-      'VERCEL_TOKEN',
-      'VERCEL_TEAM_ID'
+      'SENDGRID_API_KEY'
     ),
     NODE_ENV,
   })

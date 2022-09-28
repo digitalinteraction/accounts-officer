@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 
 //
-// The cli entrypoint
+// The cli entry point
 //
 
-import yargs = require('yargs')
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
-import { updateDigitalOceanRecords } from './commands/do'
-import { updateGoDaddyRecords } from './commands/godaddy'
-import { updateAwsRecords } from './commands/aws'
-import { MergeResult } from './services/airtable'
-import { dataTypes, runDataCommand } from './commands/data'
-import { updateSendgridRecords } from './commands/sendgrid'
+import { updateDigitalOceanRecords } from './commands/do.js'
+import { updateGoDaddyRecords } from './commands/godaddy.js'
+import { updateAwsRecords } from './commands/aws.js'
+import { MergeResult } from './services/airtable.js'
+import { dataTypes, runDataCommand } from './commands/data.js'
+import { updateSendgridRecords } from './commands/sendgrid.js'
 
 /** wrap a top-level function to handle it's errors by outputting them and exiting the process */
 function handleErrors<T extends any[], U>(
@@ -21,88 +22,99 @@ function handleErrors<T extends any[], U>(
     try {
       return await block(...args)
     } catch (error) {
-      console.error(error.message)
-
-      if (process.env.NODE_ENV === 'development') {
-        console.error()
-        console.error(error.stack)
-      }
+      console.error(error instanceof Error ? error.message : error)
 
       process.exit(1)
     }
   }
 }
 
+export interface RunOptions {
+  dryRun: boolean
+}
+
 async function runUpdate<T extends any[], U>(
   message: string,
-  run: () => Promise<MergeResult>
+  run: (options: RunOptions) => Promise<MergeResult>,
+  options: RunOptions
 ) {
   console.log(message)
-  const result = await run()
+  const result = await run(options)
   console.log('  unlinked: %o', result.unlinked)
   console.log('  update: %o', result.updated)
   console.log('  created: %o', result.created)
   console.log()
 }
 
-yargs.help().alias('h', 'help').demandCommand().recommendCommands()
+const cli = yargs(hideBin(process.argv))
+  .help()
+  .alias('h', 'help')
+  .demandCommand()
+  .recommendCommands()
+  .option('dryRun', { type: 'boolean', default: false })
 
 //
 // All
 //
-yargs.command(
+cli.command(
   'all',
   'Run all services in sequence',
   (yargs) => yargs,
   handleErrors(async (args) => {
-    await runUpdate('Updating AWS', updateAwsRecords)
-    await runUpdate('Updating DO', updateDigitalOceanRecords)
-    await runUpdate('Updating GoDaddy', updateGoDaddyRecords)
-    await runUpdate('Updating SendGrid', updateSendgridRecords)
+    await runUpdate('Updating AWS', updateAwsRecords, args)
+    await runUpdate('Updating DO', updateDigitalOceanRecords, args)
+    await runUpdate('Updating GoDaddy', updateGoDaddyRecords, args)
+    await runUpdate('Updating SendGrid', updateSendgridRecords, args)
   })
 )
 
 //
 // AWS
 //
-yargs.command(
+cli.command(
   'aws',
   'Run through AWS, fetch resources and update Airtable',
   (yargs) => yargs,
-  handleErrors(() => runUpdate('Updating AWS', updateAwsRecords))
+  handleErrors((args) => runUpdate('Updating AWS', updateAwsRecords, args))
 )
 
 //
 // DigitalOcean
 //
-yargs.command(
+cli.command(
   ['digitalocean', 'do'],
   'Run through DigitalOcean, fetch resources and update Airtable',
   (yargs) => yargs,
-  handleErrors(() => runUpdate('Updating DO', updateDigitalOceanRecords))
+  handleErrors((args) =>
+    runUpdate('Updating DO', updateDigitalOceanRecords, args)
+  )
 )
 
 //
 // GoDaddy
 //
-yargs.command(
+cli.command(
   'godaddy',
   'Run through GoDaddy, fetch resources and update Airtable',
   (yargs) => yargs,
-  handleErrors(() => runUpdate('Updating GoDaddy', updateGoDaddyRecords))
+  handleErrors((args) =>
+    runUpdate('Updating GoDaddy', updateGoDaddyRecords, args)
+  )
 )
 
 //
 // SendGrid
 //
-yargs.command(
+cli.command(
   'sendgrid',
   'Run through SendGrid, fetch resources and update Airtable',
   (yargs) => yargs,
-  handleErrors(() => runUpdate('Updating SendGrid', updateSendgridRecords))
+  handleErrors((args) =>
+    runUpdate('Updating SendGrid', updateSendgridRecords, args)
+  )
 )
 
-yargs.command(
+cli.command(
   'data <service> [resource]',
   'Fetch data from a service',
   (yargs) =>
@@ -122,4 +134,4 @@ yargs.command(
 )
 
 // Run the CLI
-yargs.parse()
+cli.parse()

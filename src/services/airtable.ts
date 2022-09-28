@@ -1,17 +1,13 @@
-import Airtable = require('airtable')
+import Airtable from 'airtable'
 import createDebug from 'debug'
-
-import AirtableQuery = require('airtable/lib/query')
-import AirtableRecord = require('airtable/lib/record')
-import AirtableTable = require('airtable/lib/table')
-import { doc } from 'prettier'
+import { RunOptions } from '../cli.js'
 
 const debug = createDebug('cli:service:airtable')
 
-export { Airtable, AirtableQuery, AirtableRecord, AirtableTable }
+export { Airtable }
 
 /** A record that can be merged into Airtable */
-export interface MergableRecord {
+export interface MergableRecord extends Airtable.FieldSet {
   Name: string
   Type: string
 }
@@ -26,26 +22,8 @@ export interface MergeResult {
 // Reads in AIRTABLE_API_KEY
 export const airtable = new Airtable()
 
-/** Traverse Airtable's pagination API to get all records that match a query */
-function findAllRecords(query: AirtableQuery): Promise<AirtableRecord[]> {
-  return new Promise((resolve, reject) => {
-    const allRecords = <AirtableRecord[]>[]
-
-    query.eachPage(
-      (records, next) => {
-        allRecords.push(...records)
-        next()
-      },
-      (err: any) => {
-        if (err) reject(err)
-        else resolve(allRecords)
-      }
-    )
-  })
-}
-
 /** Whether a record needs updating based on a new value */
-function hasChanged<T extends MergableRecord>(a: AirtableRecord, b: T) {
+function hasChanged<T extends MergableRecord>(a: Airtable.Record<T>, b: T) {
   for (const key in b) {
     if (a.get(key) !== b[key]) {
       return true
@@ -62,12 +40,13 @@ function hasChanged<T extends MergableRecord>(a: AirtableRecord, b: T) {
  * - creates records that do not exists
  */
 export async function mergeAirtableRecords<T extends MergableRecord>(
-  table: AirtableTable,
+  table: Airtable.Table<T>,
   recordType: string,
-  toMerge: T[]
+  toMerge: T[],
+  { dryRun }: { dryRun: boolean }
 ): Promise<MergeResult> {
   debug('mergeRecords table=%o type=%o', table.name, recordType)
-  const allRecords = await findAllRecords(table.select({ view: 'Grid view' }))
+  const allRecords = await table.select({ view: 'Grid view' }).all()
 
   const toCreate: any[] = []
   const toUpdate: any[] = []
@@ -127,7 +106,7 @@ export async function mergeAirtableRecords<T extends MergableRecord>(
       toCreate.push({
         fields: {
           ...item,
-          Status: 'active',
+          Status: 'new',
         },
       })
     }
@@ -137,7 +116,7 @@ export async function mergeAirtableRecords<T extends MergableRecord>(
   if (toCreate.length > 0) {
     debug('Creating %o new records', toCreate.length)
     for (const page of chunkify(toCreate, 10)) {
-      await table.create(page)
+      if (!dryRun) await table.create(page)
     }
   }
 
@@ -145,7 +124,7 @@ export async function mergeAirtableRecords<T extends MergableRecord>(
   if (toUpdate.length > 0) {
     debug('Updating %o records', toUpdate.length)
     for (const page of chunkify(toUpdate, 10)) {
-      await table.update(page)
+      if (!dryRun) await table.update(page)
     }
   }
 
@@ -184,24 +163,25 @@ export function combineMergeResults(...results: MergeResult[]): MergeResult {
 //
 
 /** A definition of a resource and how to fetch records */
-export interface ResourceService {
+export interface ResourceService<T extends MergableRecord> {
   type: string
-  fetch(): Promise<MergableRecord[]>
+  fetch(): Promise<T[]>
 }
 
 /** A set of records for a given type, like "vm" or "bucket" resources */
-export interface ResourceRecords {
+export interface ResourceRecords<T extends MergableRecord> {
   type: string
-  records: MergableRecord[]
+  records: T[]
 }
 
 /** Process a set of resources and merge them into an Airtable table */
-export async function fetchAndMerge(
-  table: AirtableTable,
-  input: ResourceService[]
+export async function fetchAndMerge<T extends MergableRecord>(
+  table: Airtable.Table<T>,
+  input: ResourceService<T>[],
+  options: RunOptions
 ) {
   // Fetch all records together
-  const typedRecords: ResourceRecords[] = []
+  const typedRecords: ResourceRecords<T>[] = []
 
   for (const { type, fetch } of input) {
     const records = await fetch()
@@ -218,7 +198,7 @@ export async function fetchAndMerge(
   for (const { type, records } of typedRecords) {
     results = combineMergeResults(
       results,
-      await mergeAirtableRecords(table, type, records)
+      await mergeAirtableRecords<T>(table, type, records, options)
     )
   }
 

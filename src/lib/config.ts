@@ -1,4 +1,4 @@
-import fs = require('fs')
+import fs from 'fs'
 import { object, string, Infer, assert } from 'superstruct'
 
 /** A structure to validate and type a config for the app */
@@ -10,7 +10,6 @@ const AppConfigStruct = object({
     do: string(),
     godaddy: string(),
     sendgrid: string(),
-    vercel: string(),
   }),
 })
 
@@ -27,7 +26,7 @@ export function readConfig(): AppConfig {
 
     return json
   } catch (error) {
-    console.error(error.message)
+    console.error(error)
     process.exit(1)
   }
 }

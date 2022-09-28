@@ -74,7 +74,7 @@ Heres what each table should look like:
 | ------ | -------------------------------------------------------------------------- |
 | Name   | Single line text                                                           |
 | Type   | Single Select - droplet, cluster, database, volume, snapshot, loadbalancer |
-| Status | Single Select - active, unlinked                                           |
+| Status | Single Select - active, unlinked, new                                      |
 | Cost   | Currency                                                                   |
 
 **AWS**
@@ -83,26 +83,26 @@ Heres what each table should look like:
 | ------ | --------------------------------------------------- |
 | Name   | Single line text                                    |
 | Type   | Single Select - bucket, lightsail, domain, database |
-| Status | Single Select - active, unlinked                    |
+| Status | Single Select - active, unlinked, new               |
 | Cost   | Currency                                            |
 
 **GoDaddy**
 
-| Field        | Type                             |
-| ------------ | -------------------------------- |
-| Name         | Single line text                 |
-| Type         | Single Select - domain           |
-| Status       | Single Select - active, unlinked |
-| Expires      | Date                             |
-| HttpResponse | Single line text                 |
+| Field        | Type                                  |
+| ------------ | ------------------------------------- |
+| Name         | Single line text                      |
+| Type         | Single Select - domain                |
+| Status       | Single Select - active, unlinked, new |
+| Expires      | Date                                  |
+| HttpResponse | Single line text                      |
 
 **SendGrid**
 
-| Field  | Type                             |
-| ------ | -------------------------------- |
-| Name   | Single line text                 |
-| Type   | Single Select - apikey           |
-| Status | Single Select - active, unlinked |
+| Field  | Type                                  |
+| ------ | ------------------------------------- |
+| Name   | Single line text                      |
+| Type   | Single Select - apikey                |
+| Status | Single Select - active, unlinked, new |
 
 ## Development
 

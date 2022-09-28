@@ -3,8 +3,9 @@ import createDebug from 'debug'
 import {
   airtable,
   combineMergeResults,
+  MergableRecord,
   mergeAirtableRecords,
-} from '../services/airtable'
+} from '../services/airtable.js'
 import {
   getSizeCosts,
   getDroplets,
@@ -13,8 +14,9 @@ import {
   getVolumes,
   getSnapshots,
   getLoadBalancers,
-} from '../services/do'
-import { appConfig } from '../services/config'
+} from '../services/do.js'
+import { appConfig } from '../lib/config.js'
+import { RunOptions } from '../cli.js'
 
 const DO_VOLUME_COST_PER_GB = 0.1
 const DO_SNAPSHOT_COST_PER_GB = 0.05
@@ -29,7 +31,7 @@ const DO_LOAD_BALANCER_COSTS = new Map(
 const debug = createDebug('cli:cmd:do')
 
 /** Fetch DigitalOcean resources and merge into AirTable */
-export async function updateDigitalOceanRecords() {
+export async function updateDigitalOceanRecords(options: RunOptions) {
   debug('#updateDigitalOceanRecords')
 
   const sizeCosts = await getSizeCosts()
@@ -128,18 +130,20 @@ export async function updateDigitalOceanRecords() {
   }))
 
   // Get the DO table
-  const table = airtable.base(appConfig.base).table(appConfig.tables.do)
+  const table = airtable
+    .base(appConfig.base)
+    .table<MergableRecord>(appConfig.tables.do)
 
   //
   // Merge in the new records and return a single MergeResult
   //
   return combineMergeResults(
-    await mergeAirtableRecords(table, 'droplet', newDropletRecords),
-    await mergeAirtableRecords(table, 'cluster', newClusterRecords),
-    await mergeAirtableRecords(table, 'database', newDatabaseRecords),
-    await mergeAirtableRecords(table, 'volume', newVolumeRecords),
-    await mergeAirtableRecords(table, 'snapshot', newSnapshotRecords),
-    await mergeAirtableRecords(table, 'loadbalancer', newLoadbalancers)
+    await mergeAirtableRecords(table, 'droplet', newDropletRecords, options),
+    await mergeAirtableRecords(table, 'cluster', newClusterRecords, options),
+    await mergeAirtableRecords(table, 'database', newDatabaseRecords, options),
+    await mergeAirtableRecords(table, 'volume', newVolumeRecords, options),
+    await mergeAirtableRecords(table, 'snapshot', newSnapshotRecords, options),
+    await mergeAirtableRecords(table, 'loadbalancer', newLoadbalancers, options)
   )
 }
 

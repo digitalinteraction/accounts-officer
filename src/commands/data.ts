@@ -1,8 +1,7 @@
-import { awsData } from './aws'
-import { doData } from './do'
-import { godaddyData } from './godaddy'
-import { sendgridData } from './sendgrid'
-import { vercelData } from './vercel'
+import { awsData } from './aws.js'
+import { doData } from './do.js'
+import { godaddyData } from './godaddy.js'
+import { sendgridData } from './sendgrid.js'
 
 //
 // Data
@@ -12,7 +11,6 @@ export const dataTypes: Record<string, Record<string, Function>> = {
   godaddy: godaddyData,
   aws: awsData,
   sendgrid: sendgridData,
-  vercel: vercelData,
 }
 
 export async function runDataCommand(

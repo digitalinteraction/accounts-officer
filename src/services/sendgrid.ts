@@ -1,5 +1,5 @@
 import got, { PaginationOptions } from 'got'
-import { env } from '../services/env'
+import { env } from '../lib/env.js'
 
 export const sendgrid = got.extend({
   prefixUrl: 'https://api.sendgrid.com/v3',
@@ -20,16 +20,14 @@ export interface SendGridApiKey {
 
 function createPaginator<T>(): PaginationOptions<T, { result: T[] }> {
   return {
-    pagination: {
-      transform(response) {
-        return response.body.result
-      },
+    transform(response) {
+      return response.body.result
     },
   }
 }
 
 export async function getApiKeys() {
   return sendgrid.paginate.all('api_keys', {
-    ...createPaginator<SendGridApiKey>(),
+    pagination: createPaginator<SendGridApiKey>(),
   })
 }

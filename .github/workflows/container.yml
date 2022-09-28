@@ -1,27 +1,56 @@
 #
-# refs:
-# - https://github.com/marketplace/actions/build-and-push-docker-images
-# - https://help.github.com/en/actions/language-and-framework-guides/publishing-docker-images
-# - https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token
+# A GitHub workflow to build a container for each semantically versioned tag (i.e. vX.Y.Z).
+#
+# help:
+# - tagging info: https://github.com/docker/build-push-action/blob/v2/docs/advanced/tags-labels.md
+# - original gist: https://gist.github.com/robb-j/049217ca8cecf4e214b8b82123f7371b
+#
+# TODO:
+# - set env.REGISTRY below
+# - remove these todos
 #
 
-name: Publish docker image
+name: 'Build Container'
 
 on:
   push:
-    tags: [v*]
+    tags: [v*.*.*]
+
+env:
+  REGISTRY: ghcr.io/digitalinteraction/accounts-officer
 
 jobs:
-  publish:
+  build_container:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Push to DockerHub
-        uses: docker/build-push-action@v1
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: openlab/accounts-officer
-          tag_with_ref: true
+          images: |
+            ${{ env.REGISTRY }}
+          tags: |
+            type=semver,pattern={{version}}
+
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

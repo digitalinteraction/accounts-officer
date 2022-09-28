@@ -3,15 +3,17 @@ import createDebug from 'debug'
 import {
   airtable,
   combineMergeResults,
+  MergableRecord,
   mergeAirtableRecords,
-} from '../services/airtable'
-import { appConfig } from '../services/config'
-import * as aws from '../services/aws'
+} from '../services/airtable.js'
+import { appConfig } from '../lib/config.js'
+import * as aws from '../services/aws.js'
+import { RunOptions } from '../cli.js'
 
 const debug = createDebug('cli:cmd:aws')
 
 /** Fetch AWS resources and merge into Airtable */
-export async function updateAwsRecords() {
+export async function updateAwsRecords(opts: RunOptions) {
   debug('#updateAwsRecords')
 
   // Fetch buckets
@@ -61,14 +63,16 @@ export async function updateAwsRecords() {
   )
 
   // Get the AWS table
-  const table = airtable.base(appConfig.base).table(appConfig.tables.aws)
+  const table = airtable
+    .base(appConfig.base)
+    .table<MergableRecord>(appConfig.tables.aws)
 
   // Merge in the new records and return a single MergeResult
   return combineMergeResults(
-    await mergeAirtableRecords(table, 'bucket', newBucketRecords),
-    await mergeAirtableRecords(table, 'lightsail', newLightsailRecords),
-    await mergeAirtableRecords(table, 'domain', newDomainRecords),
-    await mergeAirtableRecords(table, 'database', newDatabaseRecords)
+    await mergeAirtableRecords(table, 'bucket', newBucketRecords, opts),
+    await mergeAirtableRecords(table, 'lightsail', newLightsailRecords, opts),
+    await mergeAirtableRecords(table, 'domain', newDomainRecords, opts),
+    await mergeAirtableRecords(table, 'database', newDatabaseRecords, opts)
   )
 }
 

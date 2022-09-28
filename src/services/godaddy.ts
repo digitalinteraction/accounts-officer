@@ -5,7 +5,7 @@
 //
 
 import got from 'got'
-import { env } from '../services/env'
+import { env } from '../lib/env.js'
 
 /** A "got" instance authenticated to talk to the GoDaddy API */
 export const godaddy = got.extend({

@@ -1,13 +1,15 @@
 import createDebug from 'debug'
-import got from 'got'
+import got, { RequestError, TimeoutError, MaxRedirectsError } from 'got'
+import { RunOptions } from '../cli.js'
 
 import {
   airtable,
   combineMergeResults,
+  MergableRecord,
   mergeAirtableRecords,
-} from '../services/airtable'
-import { appConfig } from '../services/config'
-import { getDomains } from '../services/godaddy'
+} from '../services/airtable.js'
+import { appConfig } from '../lib/config.js'
+import { getDomains } from '../services/godaddy.js'
 
 const debug = createDebug('cli:cmd:godaddy')
 
@@ -24,7 +26,7 @@ function dateify(dateString: string) {
 }
 
 /** Fetch GoDaddy records and merge into Airtable */
-export async function updateGoDaddyRecords() {
+export async function updateGoDaddyRecords(options: RunOptions) {
   debug('#updateGoDaddyRecords')
 
   // Fetch domains
@@ -48,9 +50,12 @@ export async function updateGoDaddyRecords() {
   }
 
   // Update domain records
-  const table = airtable.base(appConfig.base).table(appConfig.tables.godaddy)
+  const table = airtable
+    .base(appConfig.base)
+    .table<MergableRecord>(appConfig.tables.godaddy)
+
   return combineMergeResults(
-    await mergeAirtableRecords(table, 'domain', newDomainRecords)
+    await mergeAirtableRecords(table, 'domain', newDomainRecords, options)
   )
 }
 
@@ -65,22 +70,22 @@ async function pollDomain(domain: string) {
     const res = await got(`http://${domain}`, {
       followRedirect: true,
       throwHttpErrors: false,
-      timeout: 5000,
+      timeout: { request: 5000 },
     })
 
     debug('poll %o status=%o', domain, res.statusCode)
 
     return `${res.statusMessage ?? 'Unknown'} - ${res.statusCode}`
   } catch (error) {
-    if (error instanceof got.RequestError) {
+    if (error instanceof RequestError) {
       return `Error - ${error.code ?? 'UNKNOWN'}`
     }
-    if (error instanceof got.TimeoutError) {
+    if (error instanceof TimeoutError) {
       return `Error - Timeout`
     }
-    if (error instanceof got.MaxRedirectsError) {
+    if (error instanceof MaxRedirectsError) {
       return `Error - Too many redirects`
     }
-    return `Error - ${error?.message ?? 'UNKNOWN'}`
+    return `Error - ${(error as Error)?.message ?? 'UNKNOWN'}`
   }
 }
