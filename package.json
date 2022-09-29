@@ -9,7 +9,7 @@
     "build": "tsc",
     "lint": "tsc --noEmit",
     "format": "prettier --write '**/*.{js,json,css,md,ts,tsx}'",
-    "preversion": "npm run test -s && npm run build",
+    "preversion": "npm run build",
     "postversion": "git push --follow-tags",
     "start": "node --loader ts-node/esm -r dotenv/config src/cli.ts",
     "debug": "node --inspect-brk --loader ts-node/esm -r dotenv/config src/cli.ts",
