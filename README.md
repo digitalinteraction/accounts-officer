@@ -181,7 +181,7 @@ This uses the [yorkie](https://www.npmjs.com/package/yorkie)
 and [lint-staged](https://www.npmjs.com/package/lint-staged)
 packages which are configured in the package.json.
 
-You can manually run the formatter with `npm run prettier` if you want.
+You can manually run the formatter with `npm run format` if you want.
 
 ## Releasing
 
@@ -189,7 +189,7 @@ Releases are automated using git tags,
 which should be generated using the `npm version` command.
 This generates a `vX.Y.Z` git tag which, when pushed, runs a GitHub workflow
 to build a container that is pushed to
-[DockerHub](http://hub.docker.com/r/openlab/accounts-officer)
+[GitHub Container Registry](https://github.com/digitalinteraction/accounts-officer/pkgs/container/accounts-officer)
 
 ## Ideas / Future work
 
