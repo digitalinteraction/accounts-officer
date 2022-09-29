@@ -1,7 +1,7 @@
 {
   "name": "@openlab/accounts-officer",
   "type": "module",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
   "repository": "digitalinteraction/accounts-officer",
   "license": "MIT",
