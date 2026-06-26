@@ -22,7 +22,8 @@ function handleErrors<T extends any[], U>(
     try {
       return await block(...args)
     } catch (error) {
-      console.error(error instanceof Error ? error.message : error)
+      console.error('Command failed')
+      console.error(error)
 
       process.exit(1)
     }

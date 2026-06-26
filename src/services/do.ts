@@ -100,7 +100,7 @@ function paginator<T, K extends string>(
     // A method to transform a http response into an array of items
     transform(response) {
       debug('page=%o', response.requestUrl.toString())
-      return response.body[key]
+      return response.body[key] ?? []
     },
 
     // A method to take a response and return new search params for the next response
